@@ -81,9 +81,13 @@ GameGuard remains responsible for supplying and managing its own driver file.
 
 ## Supported distributions
 
-The original upstream installer supports Fedora and Ubuntu. This fork adds a
-pacman dependency backend for Arch Linux (`ID=arch`) and CachyOS
-(`ID=cachyos`).
+The original upstream installer supports Fedora and Ubuntu. This fork adds and
+validates an Arch-family pacman backend for Arch Linux (`ID=arch`) and CachyOS
+(`ID=cachyos`). The Arch-family implementation was exercised on the developer's
+CachyOS x86_64 system, including dependency preparation, Wine compilation,
+installation and real MU Online launch. CachyOS identifies itself with
+`ID=cachyos`; this is an Arch-based validation, not a claim that a separate
+vanilla Arch installation was independently tested.
 
 The Arch-family backend is implemented in `scripts/install-cachyos.sh` and
 `scripts/install-cachyos-run.sh`. Both retain the upstream Fedora and Ubuntu
@@ -95,11 +99,17 @@ Reference-tested systems:
 | --- | --- | --- |
 | Fedora 44 | x86_64 | Full E2E verified (upstream reference) |
 | Kubuntu 26.04.1 / Ubuntu 26.04 base | x86_64 | Full E2E verified (upstream reference) |
-| CachyOS | x86_64 | Local installation and game-launch validation; not full E2E verified |
+| Arch Linux family (CachyOS) | x86_64 | Arch-family backend validated locally: dependencies, Wine build, installation and real MU launch |
 
-The CachyOS validation does not claim that this installer copies or loads
-`GGKernel64.sys`; its recorded result is `GGKERNEL64_DRIVER_COPIED=False`.
-Arch Linux has not been independently qualified as a full-E2E reference system.
+The local validation was performed on CachyOS, which uses the Arch package
+ecosystem and reports `ID=cachyos`. It demonstrates that the fork's Arch-family
+path works on the developer's machine; it is not presented as an independent
+clean-install qualification of vanilla Arch Linux or as the same full-E2E
+reference qualification recorded for Fedora and Kubuntu.
+
+The CachyOS validation does not claim that the installer copies or loads
+`GGKernel64.sys`; its recorded installer result is
+`GGKERNEL64_DRIVER_COPIED=False`.
 
 ## Requirements
 
@@ -558,22 +568,20 @@ references and carry notices identifying that status.
 
 ## Release status
 
-Version 0.1.0 uses the following publication layout:
+The fork's current published release is:
 
-- repository: `https://github.com/Krzysztof977/mu-online-linux`
-- tag: `v0.1.0`
-- release archive: `mu-online-linux-0.1.0.tar.gz`
-- checksum asset: `SHA256SUMS`
-- tagged bootstrap: `bootstrap.sh`
+- repository: `https://github.com/gordaogameplay/mu-online-linux-arch`
+- tag: `v0.2.0`
+- release: `https://github.com/gordaogameplay/mu-online-linux-arch/releases/tag/v0.2.0`
+- default branch: `main`
 
-The versioned release archive contains the distributable project code,
-patches, licensing material and documentation. It does not contain
-proprietary MU Online or GameGuard binaries.
+GitHub provides the source archives for the tagged release. These archives
+contain the project source, Arch-family installer variants, Wine compatibility
+patches, licensing material and documentation. They do not contain compiled
+binaries, proprietary MU Online files or GameGuard binaries.
 
-`bootstrap.sh` is intentionally distributed from the tagged Git source rather
-than embedded in the release tarball. This allows the tagged bootstrap to pin
-the expected SHA256 of the release archive without making the archive digest
-depend on the bootstrap file that contains that digest.
-
-The bootstrap verifies the downloaded release archive before invoking the
-archived `scripts/install.sh`.
+The original `bootstrap.sh` remains unchanged from upstream and follows the
+upstream release/install path. It is **not** the installation entry point for
+Arch Linux or CachyOS. On those systems, clone this fork and invoke
+`scripts/install-cachyos.sh` or `scripts/install-cachyos-run.sh` directly, as
+documented in the Installation section.
