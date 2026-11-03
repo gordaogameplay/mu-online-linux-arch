@@ -1,5 +1,10 @@
 # MU Online Global on Linux with nProtect GameGuard
 
+This repository is the **Arch Linux / CachyOS-focused fork** of
+[mu-online-linux](https://github.com/Krzysztof977/mu-online-linux). It preserves
+the original upstream installer and adds pacman-based dependency support through
+dedicated installer variants.
+
 Linux compatibility project for running the official **MU Online Global**
 client with **nProtect GameGuard enabled**.
 
@@ -76,23 +81,25 @@ GameGuard remains responsible for supplying and managing its own driver file.
 
 ## Supported distributions
 
-The installer currently supports:
+The original upstream installer supports Fedora and Ubuntu. This fork adds a
+pacman dependency backend for Arch Linux (`ID=arch`) and CachyOS
+(`ID=cachyos`).
 
-- Fedora
-- Ubuntu and Ubuntu-based systems reporting `ID=ubuntu`
+The Arch-family backend is implemented in `scripts/install-cachyos.sh` and
+`scripts/install-cachyos-run.sh`. Both retain the upstream Fedora and Ubuntu
+paths while adding Arch-family package installation.
 
-Fully tested reference systems:
+Reference-tested systems:
 
 | Distribution | Architecture | Status |
 | --- | --- | --- |
-| Fedora 44 | x86_64 | Full E2E verified |
-| Kubuntu 26.04.1 / Ubuntu 26.04 base | x86_64 | Full E2E verified |
+| Fedora 44 | x86_64 | Full E2E verified (upstream reference) |
+| Kubuntu 26.04.1 / Ubuntu 26.04 base | x86_64 | Full E2E verified (upstream reference) |
+| CachyOS | x86_64 | Local installation and game-launch validation; not full E2E verified |
 
-Fedora releases other than 44 and Ubuntu releases other than 26.04 are not
-currently reference-tested.
-
-Other distribution families such as Arch Linux and openSUSE are not yet
-supported by the installer.
+The CachyOS validation does not claim that this installer copies or loads
+`GGKernel64.sys`; its recorded result is `GGKERNEL64_DRIVER_COPIED=False`.
+Arch Linux has not been independently qualified as a full-E2E reference system.
 
 ## Requirements
 
@@ -108,75 +115,42 @@ The MU Online installer is not included in this repository.
 
 ## Installation
 
-For version 0.1.0, the recommended entry point is the tagged bootstrap
-script. The official MU Online Windows installer must already be downloaded
-separately from Webzen and present locally.
+### Arch Linux / CachyOS
 
-Before running the command below:
+Clone this fork and use an Arch-aware installer variant. Do not use the
+upstream `bootstrap.sh` for Arch Linux or CachyOS: it downloads the upstream
+release and invokes the unchanged upstream `scripts/install.sh`.
 
-1. The command is an example. Replace
-   `/path/to/official-MU-installer.exe` with the actual path to the official
-   MU Online installer on your computer. Keep the path in quotes, especially
-   if it contains spaces.
-2. The full installation can take **30 minutes or more**, depending on CPU
-   performance, storage speed, network speed, and package download times.
-   Building Wine is the longest stage and may appear inactive for periods of
-   time. Do not interrupt the installer or reboot the system unless an actual
-   error is reported.
-3. If Wine asks to install **Wine Mono** or **Wine Gecko**, choose
-   **Install**. If both prompts appear, install both components.
-4. When the installation finishes, the installer prints the next step and
-   launch instructions in the terminal.
-5. On the first launch, a small dialog may appear with garbled or unreadable
-   text because of the game's legacy character encoding. This is expected;
-   click **OK** and continue.
-6. The bootstrap downloads and verifies only the MU Online Linux
-   compatibility package. It does not download or redistribute MU Online,
-   nProtect GameGuard, or other proprietary game files.
+```bash
+git clone https://github.com/gordaogameplay/mu-online-linux-arch.git
+cd mu-online-linux-arch
 
-Example:
+bash scripts/install-cachyos.sh \
+    --installer "/path/to/MU1_15H_Full(eng).exe"
+```
 
-~~~bash
-curl -fsSL https://raw.githubusercontent.com/Krzysztof977/mu-online-linux/v0.1.0/bootstrap.sh | bash -s -- --installer "/path/to/official-MU-installer.exe"
-~~~
+To control Wine build parallelism, use the run variant:
 
-The bootstrap downloads the matching versioned release archive, verifies its
-SHA256 checksum, extracts it to a temporary directory, runs the archived
-`scripts/install.sh` with the supplied arguments, and removes the temporary
-files after the installer exits.
+```bash
+MU_BUILD_JOBS=8 bash scripts/install-cachyos-run.sh \
+    --installer "/path/to/MU1_15H_Full(eng).exe"
+```
 
-Advanced users may instead use a tagged source checkout:
+Both variants use `pacman -S --needed` for Arch-family dependency roots.
+Use `--skip-deps` only when all required commands, development libraries and
+32-bit/64-bit audio metadata are already installed.
 
-~~~bash
-git clone https://github.com/Krzysztof977/mu-online-linux.git
-cd mu-online-linux
-git checkout v0.1.0
+### Fedora / Ubuntu
 
-./scripts/install.sh \
-    --installer "/path/to/official-MU-installer.exe"
-~~~
+The original upstream installer remains available and unchanged:
 
-The default private installation area is:
+```bash
+bash scripts/install.sh \
+    --installer "/path/to/MU1_15H_Full(eng).exe"
+```
 
-~~~text
-~/.local/share/mu-online-linux
-~~~
-
-The installer also accepts:
-
-~~~text
---base PATH
-    Override the private installation workspace.
-
---skip-deps
-    Do not install system dependencies.
-
--h, --help
-    Show installer usage.
-~~~
-
-A normal user should not use `--skip-deps` unless all required dependencies
-are already installed.
+The original `bootstrap.sh` also remains unchanged and retains its upstream
+release-based behavior. It is not the entry point for Arch/CachyOS.
 
 ## Installation stages
 
@@ -501,10 +475,15 @@ LICENSES/
     licensing details and LGPL-2.1-or-later text
 
 bootstrap.sh
-    tagged release bootstrap entry point
+    unchanged upstream tagged-release bootstrap entry point
 
 scripts/
-    automated installer
+    install.sh
+        unchanged upstream Fedora/Ubuntu installer
+    install-cachyos.sh
+        fork installer with Arch/CachyOS pacman backend
+    install-cachyos-run.sh
+        same backend with MU_BUILD_JOBS override
 
 patches/
     Wine compatibility patches

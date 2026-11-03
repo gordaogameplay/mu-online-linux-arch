@@ -7,13 +7,12 @@ The installer source is the implementation source of truth.
 
 ## Support model
 
-The current installer recognizes two Linux distribution families:
+The unchanged upstream installer recognizes Fedora and Ubuntu. The fork
+variants additionally recognize Arch Linux (`ID=arch`) and CachyOS
+(`ID=cachyos`), mapping both IDs to a shared pacman dependency backend.
 
-- Fedora
-- Ubuntu
-
-The installer does not currently contain dependency backends for Arch Linux,
-openSUSE, Debian with `ID=debian`, or other distribution IDs.
+The fork does not add openSUSE, Debian with `ID=debian`, or generic
+distribution-ID support.
 
 A distribution being accepted by the installer is not the same as that exact
 release having completed full end-to-end reference testing.
@@ -67,11 +66,9 @@ Ubuntu derivatives are accepted only when their `/etc/os-release` reports
 The verified Kubuntu 26.04.1 installation follows this path because its base
 reports Ubuntu 26.04 to the installer.
 
-Any other distribution `ID` is currently rejected with:
-
-```text
-supported distributions are currently Fedora and Ubuntu
-```
+The unchanged upstream installer rejects other distribution IDs. The
+fork variants additionally accept `arch` and `cachyos`, mapping both to the
+Arch-family backend.
 
 ## Operating system gate
 
@@ -165,6 +162,18 @@ Fedora 44 is the full-E2E reference Fedora release.
 
 Other Fedora versions enter the same backend but receive a warning that Fedora
 44 is the verified reference.
+
+## Arch Linux / CachyOS backend
+
+The fork installer variants accept `ID=arch` and `ID=cachyos` and use
+`pacman` to install the Arch dependency roots:
+
+```text
+pacman -S --needed <package-list>
+```
+
+The backend uses the repositories already configured on the user's system.
+It does not enable or add third-party repositories.
 
 ## Ubuntu backend
 
@@ -353,6 +362,63 @@ The explicit `:amd64` and `:i386` audio development packages are why the
 Ubuntu backend enables the i386 foreign architecture before package
 installation when required.
 
+## Arch dependency roots
+
+The fork's Arch-family backend installs these package roots:
+
+```text
+gcc
+make
+bison
+flex
+mingw-w64-gcc
+mingw-w64-binutils
+gettext
+curl
+file
+patch
+python
+tar
+xz
+pkgconf
+freetype2
+fontconfig
+gnutls
+libx11
+libxext
+libxcursor
+libxi
+libxrandr
+libxrender
+libxinerama
+libxcomposite
+libxfixes
+libxdamage
+libxxf86vm
+libxcb
+libxkbcommon
+wayland
+libglvnd
+mesa
+vulkan-headers
+vulkan-icd-loader
+libpulse
+lib32-libpulse
+alsa-lib
+lib32-alsa-lib
+coreutils
+diffutils
+findutils
+grep
+sed
+gawk
+perl
+```
+
+The list includes native and multilib PulseAudio/ALSA packages. The installer
+also validates the corresponding metadata under `/usr/lib/pkgconfig` and
+`/usr/lib32/pkgconfig`.
+
 ## Post-install command validation
 
 After the dependency stage, the installer requires all of the following
@@ -443,6 +509,15 @@ On Ubuntu it requires:
 /usr/lib/i386-linux-gnu/pkgconfig/libpulse.pc
 /usr/lib/x86_64-linux-gnu/pkgconfig/alsa.pc
 /usr/lib/i386-linux-gnu/pkgconfig/alsa.pc
+```
+
+On Arch Linux and CachyOS it requires:
+
+```text
+/usr/lib/pkgconfig/libpulse.pc
+/usr/lib32/pkgconfig/libpulse.pc
+/usr/lib/pkgconfig/alsa.pc
+/usr/lib32/pkgconfig/alsa.pc
 ```
 
 Every listed file must exist.
@@ -600,15 +675,22 @@ A system is **supported by the current backend** when its `/etc/os-release`
 selects one of the implemented dependency backends and it passes the current
 platform and dependency gates.
 
-At present those backend IDs are:
+The unchanged upstream installer supports these backend IDs:
 
 ```text
 fedora
 ubuntu
 ```
 
-This means an untested Fedora or Ubuntu release may be accepted by the
-installer while still lacking E2E-verified status.
+The fork variants additionally support:
+
+```text
+arch
+cachyos
+```
+
+An untested release may be accepted by a backend while still lacking
+E2E-verified status.
 
 ### Accepted with version warning
 
@@ -634,19 +716,18 @@ Examples include:
 
 - non-Linux hosts
 - non-x86_64 hosts
-- distribution IDs other than `fedora` and `ubuntu`
+- distribution IDs other than `fedora`, `ubuntu`, `arch` and `cachyos` in the fork variants
 - Ubuntu installations whose native dpkg architecture is not `amd64`
 
 Using `--skip-deps` does not change these platform or distribution gates.
 
 ## Known support boundaries
 
-The current support layer is intentionally narrow.
-
-It does not currently provide:
+The support layer is intentionally narrow. The unchanged upstream installer
+does not provide an Arch backend; the fork variants add Arch Linux/CachyOS.
+The project does not currently provide:
 
 ```text
-Arch Linux / pacman backend
 openSUSE / zypper backend
 Debian ID backend
 generic package-manager-independent dependency resolution
@@ -690,7 +771,7 @@ VERSION_ID=26.04
 A derivative reporting a different `ID` does not automatically inherit Ubuntu
 backend support.
 
-## Qualifying a new Fedora or Ubuntu release
+## Qualifying a new distribution release
 
 Before adding another release to the reference-tested matrix, test it from a
 clean or otherwise precisely documented baseline.
@@ -794,6 +875,7 @@ merely to make a distribution pass installation.
 | --- | --- | --- | --- | --- |
 | Fedora | 44 | x86_64 | Fedora / dnf | Yes |
 | Kubuntu | 26.04.1 | x86_64 | Ubuntu / apt | Yes |
+| CachyOS | Local test system | x86_64 | Arch / pacman | No — backend and launch tested; full E2E qualification not claimed |
 
 The Kubuntu result represents the tested Ubuntu 26.04-based path currently used
 as the Ubuntu-family reference.

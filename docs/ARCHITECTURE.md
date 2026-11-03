@@ -167,6 +167,8 @@ bootstrap.sh
 
 scripts/
   install.sh
+  install-cachyos.sh
+  install-cachyos-run.sh
 
 patches/
   0001-ntdll-ntloaddriver-scm.patch
@@ -196,11 +198,25 @@ GameGuard binaries.
 
 ## Installer interface
 
-The canonical installer is:
+The unchanged upstream installer is:
 
 ```text
 scripts/install.sh
 ```
+
+The fork adds two Arch-family installer variants:
+
+```text
+scripts/install-cachyos.sh
+scripts/install-cachyos-run.sh
+```
+
+Both retain the upstream Fedora and Ubuntu dependency paths and add a pacman
+backend for `ID=arch` and `ID=cachyos`. The run variant honors
+`MU_BUILD_JOBS` to override the detected build parallelism.
+
+The original `bootstrap.sh` remains unchanged and downloads the upstream
+release; it does not invoke either fork-specific installer.
 
 Its primary invocation is:
 
@@ -321,6 +337,13 @@ DISTRO-SUPPORT.md
 ```
 
 ## Stage 2A: system dependencies
+
+The upstream installer retains Fedora/dnf and Ubuntu/apt dependency backends.
+The fork variants add an Arch Linux/CachyOS pacman backend. Both `ID=arch`
+and `ID=cachyos` map to the same Arch package roots.
+
+The run variant differs only in build parallelism selection: it honors
+`MU_BUILD_JOBS` and otherwise uses the detected CPU count.
 
 Stage 2A prepares and validates the native dependencies required for the Wine
 build and runtime.
@@ -1423,15 +1446,26 @@ runtime diagnosis
 known historical failure modes
 ```
 
-## Canonical implementation
+## Upstream implementation and fork variants
 
-The canonical executable implementation remains:
+The original upstream executable remains unchanged:
 
 ```text
 scripts/install.sh
 ```
 
-Documentation describes and constrains that implementation.
+The fork-specific Arch-family variants are:
+
+```text
+scripts/install-cachyos.sh
+scripts/install-cachyos-run.sh
+```
+
+The two fork variants share the upstream installation pipeline and add the
+Arch Linux/CachyOS dependency backend. The run variant additionally supports
+the `MU_BUILD_JOBS` environment override.
+
+Documentation describes and constrains all three executable installer paths.
 
 If documentation and executable behavior ever diverge, the discrepancy should
 be investigated explicitly rather than silently assuming one representation is
