@@ -17,17 +17,25 @@ distribution-ID support.
 A distribution being accepted by the installer is not the same as that exact
 release having completed full end-to-end reference testing.
 
-## Reference-tested systems
+## Validated systems and validation scope
 
-Full end-to-end installation and real game launch have been verified on:
+The following reference systems completed the documented full end-to-end path:
 
-| System | Architecture | Installer status | E2E status |
+| System | Architecture | Installer backend | Validation |
 | --- | --- | --- | --- |
-| Fedora 44 | x86_64 | Supported | Verified |
-| Kubuntu 26.04.1, Ubuntu 26.04 base | x86_64 | Supported through `ID=ubuntu` | Verified |
+| Fedora 44 | x86_64 | Fedora / dnf | Full E2E verified |
+| Kubuntu 26.04.1 (Ubuntu 26.04 base) | x86_64 | Ubuntu / apt | Full E2E verified |
 
-The verified E2E path includes dependency installation, Wine build, private
-runtime installation, fresh prefix creation, official MU installation,
+The fork's Arch-family backend was also exercised successfully on the
+developer's CachyOS x86_64 machine. CachyOS reports `ID=cachyos` and uses the
+Arch `pacman` package ecosystem. The local validation included dependency
+preparation, Wine compilation, installation and launching the real MU Online
+game. This is meaningful validation of the fork's Arch-family implementation;
+it is not a separate clean-system test on vanilla Arch Linux and is not
+misrepresented as the same reference E2E qualification listed above.
+
+The full reference E2E path includes dependency installation, Wine build,
+private runtime installation, fresh prefix creation, official MU installation,
 GameGuard startup, login, character selection, world entry and working audio.
 
 ## Version handling
@@ -174,6 +182,14 @@ pacman -S --needed <package-list>
 
 The backend uses the repositories already configured on the user's system.
 It does not enable or add third-party repositories.
+
+This backend has been exercised on the developer's CachyOS x86_64 system.
+The recorded local workflow successfully prepared dependencies, compiled
+Wine, completed the MU installation and launched the real game. Since CachyOS
+is Arch-based and selects this same backend, this validates the practical
+Arch-family path. A separate vanilla Arch clean-install run has not been
+recorded, so the documentation distinguishes the tested CachyOS environment
+from an independently tested Arch Linux release.
 
 ## Ubuntu backend
 
@@ -669,11 +685,13 @@ platform preflight
 An installer backend merely accepting a distribution is not sufficient for
 E2E-verified status.
 
-### Supported by the current backend
+### Supported and locally validated by the current backend
 
 A system is **supported by the current backend** when its `/etc/os-release`
 selects one of the implemented dependency backends and it passes the current
-platform and dependency gates.
+platform and dependency gates. The Arch-family backend has additionally been
+used successfully on the developer's CachyOS x86_64 machine through Wine
+compilation, MU installation and real game launch.
 
 The unchanged upstream installer supports these backend IDs:
 
@@ -869,17 +887,19 @@ assumptions are not satisfied.
 It should not weaken existing Wine, GameGuard, networking or audio validation
 merely to make a distribution pass installation.
 
-## Current reference matrix
+## Current validation matrix
 
-| Distribution | Release | Host architecture | Backend | Full E2E |
+| Distribution | Release / environment | Host architecture | Backend | Validation result |
 | --- | --- | --- | --- | --- |
-| Fedora | 44 | x86_64 | Fedora / dnf | Yes |
-| Kubuntu | 26.04.1 | x86_64 | Ubuntu / apt | Yes |
-| CachyOS | Local test system | x86_64 | Arch / pacman | No — backend and launch tested; full E2E qualification not claimed |
+| Fedora | 44 | x86_64 | Fedora / dnf | Full E2E verified |
+| Kubuntu | 26.04.1 (Ubuntu 26.04 base) | x86_64 | Ubuntu / apt | Full E2E verified |
+| CachyOS | Developer's local system | x86_64 | Arch-family / pacman | Dependencies, Wine compilation, installation and real MU launch validated |
+| Vanilla Arch Linux | Not independently recorded | x86_64 target | Arch / pacman | Backend implemented; separate clean-install validation not claimed |
 
-The Kubuntu result represents the tested Ubuntu 26.04-based path currently used
-as the Ubuntu-family reference.
+The CachyOS result is the practical local validation for the Arch-family
+backend used by this fork. The Kubuntu result represents the tested Ubuntu
+26.04-based path currently used as the Ubuntu-family reference.
 
-No other distribution release is currently documented here as full-E2E
-verified.
+The Fedora and Kubuntu entries are the systems documented as completing the
+full reference E2E lifecycle.
 
